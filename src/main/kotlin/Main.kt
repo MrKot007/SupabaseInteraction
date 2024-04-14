@@ -11,9 +11,9 @@ suspend fun main() {
     println("Choose the action to perform:\n1 - register a new user\n2 - log in")
     val action = readLine()
     if (action == "1") {
-        println(register())
+        println("User ID: ${register()}")
     } else {
-        println(logIn())
+        println("User ID: ${logIn()}")
     }
 
 }
