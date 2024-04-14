@@ -1,16 +1,104 @@
 package org.example
 
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
-fun main() {
-    val name = "Kotlin"
-    //TIP Press <shortcut actionId="ShowIntentionActions"/> with your caret at the highlighted text
-    // to see how IntelliJ IDEA suggests fixing it.
-    println("Hello, " + name + "!")
+import kotlinx.coroutines.withContext
+import org.example.data.network.SupabaseClient
+import java.io.File
+import java.io.FileWriter
 
-    for (i in 1..5) {
-        //TIP Press <shortcut actionId="Debug"/> to start debugging your code. We have set one <icon src="AllIcons.Debugger.Db_set_breakpoint"/> breakpoint
-        // for you, but you can always add more by pressing <shortcut actionId="ToggleLineBreakpoint"/>.
-        println("i = $i")
+
+
+suspend fun main() {
+    println("Choose the action to perform:\n1 - register a new user\n2 - log in")
+    val action = readLine()
+    if (action == "1") {
+        println(register())
+    } else {
+        println(logIn())
+    }
+
+}
+
+suspend fun register(): String? {
+    val email = readLine()
+    val password = readLine()
+    if (email != null && password != null) {
+        try {
+            SupabaseClient.createNewUser(email, password)
+            val token = SupabaseClient.getCurrentToken()
+            if (token != null) {
+                saveAccessToken(token)
+                try {
+                    SupabaseClient.logInViaEmail(email, password)
+                    val userId = SupabaseClient.getUserId()
+                    return userId
+                } catch (e: Exception) {
+                    println("Authentication upon registration failed due to: ${e.message}")
+                }
+
+            } else {
+                println("No token received")
+            }
+        } catch (e: Exception) {
+            println(e.message)
+        }
+
+    }
+    return null
+
+
+}
+
+suspend fun logIn(): String? {
+    val email = readLine()
+    val password = readLine()
+    if (email != null && password != null) {
+        try {
+            SupabaseClient.logInViaEmail(email, password)
+            val token = SupabaseClient.getCurrentToken()
+            if (token != null) {
+                saveAccessToken(token)
+                val userId = SupabaseClient.getUserId()
+                return userId
+            } else {
+                println("No token received")
+            }
+        } catch (e: Exception) {
+            println(e.message)
+        }
+    }
+    return null
+}
+
+fun saveAccessToken(token: String) {
+    val path = "token.txt"
+    try {
+        val file = File(path)
+        val writer = FileWriter(file)
+        if (file.exists()) {
+            writer.write(token)
+            writer.close()
+        } else {
+            file.createNewFile()
+            writer.write(token)
+            writer.close()
+        }
+
+    } catch (e: Exception) {
+        println("Failed to create a new file due to: ${e.message}")
+    }
+
+}
+
+fun getAccessToken(): String? {
+    val path = "token.txt"
+    try {
+        val file = File(path)
+        val token = file.readText()
+        return token
+    } catch (e: Exception) {
+        println("Failed to fetch the token due to: ${e.message}")
+        return null
     }
 }
+
+
