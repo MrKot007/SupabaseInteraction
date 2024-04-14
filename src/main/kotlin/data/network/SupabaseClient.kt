@@ -2,11 +2,9 @@ package org.example.data.network
 
 import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.gotrue.Auth
-import io.github.jan.supabase.gotrue.SessionStatus
 import io.github.jan.supabase.gotrue.auth
 import io.github.jan.supabase.gotrue.providers.builtin.Email
 import io.github.jan.supabase.postgrest.Postgrest
-import kotlinx.coroutines.flow.StateFlow
 import org.example.getAccessToken
 import org.example.saveAccessToken
 
@@ -53,7 +51,7 @@ object SupabaseClient {
                 val user = auth.retrieveUser(token)
                 auth.refreshCurrentSession()
                 saveAccessToken(token)
-                println("The user is already authorized")
+                println("The user is authorized")
                 return user.id
             }
         } catch (e: Exception) {

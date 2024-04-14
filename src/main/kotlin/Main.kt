@@ -1,6 +1,5 @@
 package org.example
 
-import kotlinx.coroutines.withContext
 import org.example.data.network.SupabaseClient
 import java.io.File
 import java.io.FileWriter
@@ -15,6 +14,18 @@ suspend fun main() {
     } else {
         println("User ID: ${logIn()}")
     }
+    println("Log out? (Y/N)")
+    val logout = readLine()
+    if (logout == "Y") {
+        signOut()
+        try {
+            println(SupabaseClient.getUserId())
+        } catch (e: Exception) {
+            println(e.message)
+        }
+    } else {
+        println("ну ладно")
+    }
 
 }
 
@@ -28,7 +39,6 @@ suspend fun register(): String? {
             if (token != null) {
                 saveAccessToken(token)
                 try {
-                    SupabaseClient.logInViaEmail(email, password)
                     val userId = SupabaseClient.getUserId()
                     return userId
                 } catch (e: Exception) {
@@ -67,6 +77,18 @@ suspend fun logIn(): String? {
         }
     }
     return null
+}
+
+suspend fun signOut() {
+    try {
+        if (SupabaseClient.getCurrentToken() != null) {
+            SupabaseClient.signOut()
+            println("Signout performed, session unauthorized")
+        }
+    } catch (e: Exception) {
+        println(e.message)
+    }
+
 }
 
 fun saveAccessToken(token: String) {
