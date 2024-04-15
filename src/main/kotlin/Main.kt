@@ -1,5 +1,6 @@
 package org.example
 
+import io.github.jan.supabase.gotrue.user.UserInfo
 import org.example.data.network.SupabaseClient
 import java.io.File
 import java.io.FileWriter
@@ -10,16 +11,37 @@ suspend fun main() {
     println("Choose the action to perform:\n1 - register a new user\n2 - log in")
     val action = readLine()
     if (action == "1") {
-        println("User ID: ${register()}")
+        val userInfo = register()
+        if (userInfo != null) {
+            val userId = userInfo.id
+            val userMetadata = userInfo.userMetadata
+            println("User ID: $userId")
+            println("User metadata: $userMetadata")
+        } else {
+            println("No user found")
+        }
+
     } else {
-        println("User ID: ${logIn()}")
+        val userInfo = logIn()
+        if (userInfo != null) {
+            val userId = userInfo.id
+            val userMetadata = userInfo.userMetadata
+            println("User ID: $userId")
+            println("User metadata: $userMetadata")
+        } else {
+            println("No user found")
+        }
     }
     println("Log out? (Y/N)")
     val logout = readLine()
     if (logout == "Y") {
         signOut()
         try {
-            println(SupabaseClient.getUserId())
+            val user = SupabaseClient.getUser()
+            if (user != null){
+                println(user.id)
+            }
+
         } catch (e: Exception) {
             println(e.message)
         }
@@ -29,7 +51,7 @@ suspend fun main() {
 
 }
 
-suspend fun register(): String? {
+suspend fun register(): UserInfo? {
     val email = readLine()
     val password = readLine()
     if (email != null && password != null) {
@@ -39,8 +61,8 @@ suspend fun register(): String? {
             if (token != null) {
                 saveAccessToken(token)
                 try {
-                    val userId = SupabaseClient.getUserId()
-                    return userId
+                    val user = SupabaseClient.getUser()
+                    return user
                 } catch (e: Exception) {
                     println("Authentication upon registration failed due to: ${e.message}")
                 }
@@ -58,7 +80,7 @@ suspend fun register(): String? {
 
 }
 
-suspend fun logIn(): String? {
+suspend fun logIn(): UserInfo? {
     val email = readLine()
     val password = readLine()
     if (email != null && password != null) {
@@ -67,8 +89,8 @@ suspend fun logIn(): String? {
             val token = SupabaseClient.getCurrentToken()
             if (token != null) {
                 saveAccessToken(token)
-                val userId = SupabaseClient.getUserId()
-                return userId
+                val user = SupabaseClient.getUser()
+                return user
             } else {
                 println("No token received")
             }

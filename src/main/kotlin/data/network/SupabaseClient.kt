@@ -4,7 +4,9 @@ import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.gotrue.Auth
 import io.github.jan.supabase.gotrue.auth
 import io.github.jan.supabase.gotrue.providers.builtin.Email
+import io.github.jan.supabase.gotrue.user.UserInfo
 import io.github.jan.supabase.postgrest.Postgrest
+import kotlinx.serialization.json.JsonObject
 import org.example.getAccessToken
 import org.example.saveAccessToken
 
@@ -42,24 +44,20 @@ object SupabaseClient {
         return auth.currentAccessTokenOrNull()
     }
 
-    suspend fun getUserId(): String? {
-        try {
-            val token = getAccessToken()
-            if (token.isNullOrEmpty()) {
-                println("Unauthorized session")
-            } else {
-                val user = auth.retrieveUser(token)
-                auth.refreshCurrentSession()
-                saveAccessToken(token)
-                println("The user is authorized")
-                return user.id
-            }
-        } catch (e: Exception) {
-            println(e.message)
-            return null
+    suspend fun getUser(): UserInfo? {
+        val token = getAccessToken()
+        if (token.isNullOrEmpty()) {
+            println("Unauthorized session")
+        } else {
+            val user = auth.retrieveUser(token)
+            auth.refreshCurrentSession()
+            saveAccessToken(token)
+            println("The user is authorized")
+            return user
         }
         return null
     }
+
 
 
 }
